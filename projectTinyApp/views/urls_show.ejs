@@ -1,0 +1,16 @@
+<script type="text/javascript" >
+  include("./partials/_header.ejs");
+</script>
+
+<body>
+    <!-- Add your EJS code here -->
+  <ul>
+    <li><a href='<%= shortURL %>'><%= shortURL %></a></li>
+    <% for (let key in longURL) { %>
+      <li><a href="<%= key %>"><%= key %></a></li>
+      <li><a href="<%= longURL[key] %>"><%= longURL[key] %></a></li>
+    <% } %>
+  </ul>
+</body>
+</html>
+

@@ -1,0 +1,17 @@
+<script type="text/javascript" >
+  include("./partials/_header.ejs");
+</script>
+
+
+<body>
+    <!-- Add your EJS code here -->
+  <ul>
+    <% for (let key in urls) { %>
+      <li><a href="<%= key %>"><%= key %></a></li>
+      <li><a href="<%= urls[key] %>"><%= urls[key] %></a></li>
+    <% } %>
+
+  </ul>
+</body>
+</html>
+
