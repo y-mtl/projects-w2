@@ -1,16 +1,14 @@
-<script type="text/javascript" >
-  include("./partials/_header.ejs");
-</script>
-
-
+<%- include("./partials/_header"); %>
 <body>
-    <!-- Add your EJS code here -->
   <ul>
     <% for (let key in urls) { %>
-      <li><a href="<%= key %>"><%= key %></a></li>
-      <li><a href="<%= urls[key] %>"><%= urls[key] %></a></li>
+      <li><%= key %> -> <a href="<%= urls[key] %>"><%= urls[key] %></a></li>
+      <a href="urls/<%= key %>">Edit</a>
+      <form method="POST" action="/urls/<%= key %>/delete">
+        <form action="/urls/<%= urls[key] %>/delete" method="POST" style="margin:50px;">
+        <input type="submit" value="Delete">
+      </form>
     <% } %>
-
   </ul>
 </body>
 </html>
