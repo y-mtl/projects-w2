@@ -18,10 +18,22 @@ var urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
 
-function generateRandomString() {
+function generateRandomString(length) {
   const str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const len = 6;
+  const len = length;
 
   let res = '';
   for(var i = 0; i < len; i++){
@@ -36,7 +48,7 @@ function findURL(url) {
     if (urlDatabase[key] === url) {
       return key;
     } else {
-      let newKey = generateRandomString();
+      let newKey = generateRandomString(6);
       urlDatabase[newKey] = url;
       return newKey;
     }
@@ -49,14 +61,51 @@ function updateURLs(xKey, yURL) {
   }
 }
 
+function checkExistingUser(userEmail){
+  for (const userId in users) {
+      if ( users[userId].email === userEmail ) {
+        return true;
+      }
+  }
+}
+
+function getUserInfo(userId){
+  let userDetail = {};
+  for (const user in users) {
+    if (user === userId) {
+      userDetail = {
+        id: users[user].id,
+        email: users[user].email,
+        password: users[user].password
+      }
+    }
+  }
+  return userDetail;
+}
+
+function checkLogin(userEmail, userPwd){
+  let id = '';
+  for (const userId in users) {
+    if ( users[userId].email === userEmail && users[userId].password === userPwd) {
+      id = userId;
+    }
+  }
+  return id;
+}
+
+
+
 // pass url data to the template
 app.get("/urls", (req, res) => {
   // cookies
-  let templateVars = {
-    urls: urlDatabase,
-    username: req.cookies["username"]
-  };
-  res.render("urls_index", templateVars);
+  let userInfo = getUserInfo(req.cookies['user_id']);
+  if(!userInfo.id) {
+    userInfo.id = false;
+    res.render('login', userInfo);
+  } else {
+    userInfo.urls = urlDatabase;
+    res.render("urls_index", userInfo);
+  }
 });
 
 app.get("/urls.json", (req, res) => {
@@ -64,22 +113,58 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = {
-    urls: urlDatabase,
-    username: req.cookies["username"]
-  };
-  res.render("urls_new", templateVars);
+  let userInfo = getUserInfo(req.cookies['user_id']);
+  if(!userInfo.id) {
+    userInfo.id = false;
+    res.render('login', userInfo);
+  } else {
+    userInfo.urls = urlDatabase;
+    res.render("urls_new", userInfo);
+  }
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase, username: req.cookies['username'] };
-  res.render("urls_show", templateVars);
+  let userInfo = getUserInfo(req.cookies['user_id']);
+  if(!userInfo.id) {
+    userInfo.id = false;
+    res.render('login', userInfo);
+  } else {
+    userInfo.shortURL = req.params.id;
+    userInfo.longURL = urlDatabase;
+    res.render("urls_show", userInfo);
+    }
 });
 
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   res.redirect(302, longURL);
 });
+
+// reg
+app.get("/register", (req, res) => {
+  let userInfo = getUserInfo(req.cookies['user_id']);
+  if(!userInfo.id) {
+    userInfo.id = false;
+    res.render('register', userInfo);
+  } else {
+    userInfo.urls = urlDatabase;
+    res.render("urls_index", userInfo);
+  }
+
+});
+
+// login
+app.get("/login", (req, res) => {
+  let userInfo = getUserInfo(req.cookies['user_id']);
+  if(!userInfo.id) {
+    userInfo.id = false;
+    res.render('login', userInfo);
+  } else {
+    userInfo.urls = urlDatabase;
+    res.render("login", userInfo);
+  }
+});
+
 
 // add the handler on the root path /
 app.get("/", (req, res) => {
@@ -90,29 +175,58 @@ app.get("/hello", (req, res) => {
   res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-app.post("/login", (req, res) => {
-  const user = req.body.username;
-  res.cookie('username', user);
+app.post('/logout', (req, res) => {
+  const user = req.body.user_id;
+  res.clearCookie('user_id', user);
   res.redirect('/urls');
 });
 
-app.post('/logout', (req, res) => {
-  const user = req.body.username;
-  res.clearCookie('username', user);
-  res.redirect('/urls');
+// registration
+app.post("/register", (req, res) => {
+  const newUserId = generateRandomString(6);
+  const newUserEmail = req.body.email;
+  const newUserPwd = req.body.password;
+
+  let existingUser = checkExistingUser(newUserEmail);
+  if (!newUserEmail || !newUserPwd) {
+    res.status(400);
+    res.send('Please enter both fields.');
+  } else if (existingUser){
+    res.send('Your email is already exist.');
+  } else {
+    users[newUserId] = {id: newUserId, email: newUserEmail, password: newUserPwd};
+    res.cookie('user_id', newUserId);
+    res.redirect('/urls');
+  }
+});
+
+// login
+app.post("/login", (req, res) => {
+  const userEmail = req.body.email;
+  const userPwd = req.body.password;
+  let errorMsg = '';
+  let id = checkLogin(userEmail, userPwd);
+  if (!userEmail || !userPwd) {
+    res.status(403);
+    errorMsg = 'Please enter both fields.';
+    res.send(errorMsg);
+    //res.render('login', errorMsg);
+  } else if (!id){
+    res.status(403);
+    errorMsg = 'Your email address or password does\'t match.';
+    res.send(errorMsg);
+    //res.render("login", errorMsg);
+    //res.render('error', { error: errorMsg });
+  } else {
+    res.cookie('user_id', id);
+    res.redirect('/');
+  }
 });
 
 app.post("/urls", (req, res) => {
-  //console.log(req.body);  // debug statement to see POST parameters
-  //res.send("Ok");         // Respond with 'Ok' (we will replace this)
-
-  // fronend:form name 'whatever' ===> receive on server as 'body.whatever'
-  let inputURL = req.body.longURL; // this longURL comes from the front's form name
   let shortURL = findURL(inputURL);
 
   res.redirect(`/urls/${shortURL}`);
-  // 302 This avoids caching sensitive information" or 303?
-  // which the client browser would automatically request as a GET)
 });
 
 app.post('/urls/:id/delete', (req, res) => {
@@ -120,9 +234,7 @@ app.post('/urls/:id/delete', (req, res) => {
   res.redirect('/urls');
 });
 
-
 app.post('/urls/:id', (req, res) => {
-  // name attribute from the input text will be the key
   let updateURL = req.body.formUpdate;
   let updateKey = req.params.id;
   updateURLs(updateKey, updateURL);
