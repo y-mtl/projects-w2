@@ -2,7 +2,7 @@
 <body>
   <ul>
     <% for (let key in urls) { %>
-      <li><%= key %> -> <a href="<%= urls[key] %>"><%= urls[key] %></a></li>
+      <li><%= key %> -> <a class='btn' href="<%= urls[key] %>"><%= urls[key] %></a></li>
       <a href="urls/<%= key %>">Edit</a>
       <form method="POST" action="/urls/<%= key %>/delete">
         <form action="/urls/<%= urls[key] %>/delete" method="POST" style="margin:50px;">
