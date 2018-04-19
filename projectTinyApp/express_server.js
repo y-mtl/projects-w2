@@ -51,9 +51,7 @@ function updateURLs(xKey, yURL) {
 
 // pass url data to the template
 app.get("/urls", (req, res) => {
-  //console.log(req.header('cookie'));
-  //let cookiesHeader = req.header('cookie');
-  //cookies
+  // cookies
   let templateVars = {
     urls: urlDatabase,
     username: req.cookies["username"]
@@ -66,10 +64,18 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
+    let templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
   let templateVars = { shortURL: req.params.id, longURL: urlDatabase };
   res.render("urls_show", templateVars);
 });
