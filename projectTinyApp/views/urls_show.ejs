@@ -4,9 +4,8 @@
 
     <% for (let key in longURL) { %>
       <li>ShortURL: <%= key %></li>
-      <form method="POST" action="/urls/<%= key %>/">
-        <form action="/urls/<%= longURL[key] %>" method="POST" style="margin:50px;">
-          <input type="text" name="formUpdate" value="<%= longURL[key] %>">
+      <form method="POST" action="/urls/<%= key %>/" style="margin:50px;">
+        <input type="text" name="formUpdate" value="<%= longURL[key] %>">
         <input type="submit" value="Update">
       </form>
     <% } %>
@@ -14,5 +13,3 @@
   </ul>
 </body>
 </html>
-
- <!-- <li><a href='<%= shortURL %>'><%= shortURL %></a></li> -->
