@@ -1,17 +1,13 @@
 <%- include("./partials/_header"); %>
 
   <ul>
-
-    <% for (let key in longURL) { %>
-      <li>ShortURL: <%= key %></li>
-      <form method="POST" action="/urls/<%= key %>/" style="margin:50px;">
-        <input type="text" name="formUpdate" value="<%= longURL[key] %>" placeholder="<%= longURL[key] %>">
+      <li>ShortURL: <%= shortURL %></li>
+      <form method="POST" action="/urls/<%= shortURL %>/" style="margin:50px;">
+        <input type="text" name="formUpdate" value="<%= longURL.url %>" placeholder="<%= longURL.url %>">
         <input type="submit" value="Update">
       </form>
-    <% } %>
-
-
-
   </ul>
 </body>
 </html>
+
+<% console.log(shortURL)%>

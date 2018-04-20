@@ -21,9 +21,10 @@
 
 <body>
 
-<% if(!id) { %>
+<% if(!id || id === 1) { %>
   <ul class="reg-btn">
-    <li><a href="register">Sign Up</a></li>
-    <li><a href="login">Login</a></li>
+    <li><a href="./register">Sign Up</a></li>
+    <li><a href="./login">Login</a></li>
+   <!--  Please <a href="./register">Register</a> or <a href="./login">Login</a> to your account. -->
   </ul>
 <% } %>
