@@ -2,7 +2,9 @@
 
 <% if (!id || id === 1) { %>
     <p>Please login or signup from the links.</p>
+
 <% } else { %>
+      <% console.log(urls); if(Object.keys(urls).length === 0){console.log('yes')}%>
       <% for (let key in urls) { %>
       <ul>
         <li><%= key %><br />&rarr; <a href="<%= urls[key].url %>"><%= urls[key].url %></a></li>
