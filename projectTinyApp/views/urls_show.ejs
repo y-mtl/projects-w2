@@ -2,12 +2,11 @@
 
   <ul>
       <li>ShortURL: <%= shortURL %></li>
-      <form method="POST" action="/urls/<%= shortURL %>/" style="margin:50px;">
+      <form method="POST" action="/urls/<%= shortURL %>/">
         <input type="text" name="formUpdate" value="<%= longURL.url %>" placeholder="<%= longURL.url %>">
         <input type="submit" value="Update">
       </form>
   </ul>
+</div>
 </body>
 </html>
-
-<% console.log(shortURL)%>

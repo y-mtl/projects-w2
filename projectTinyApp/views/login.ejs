@@ -1,14 +1,14 @@
 <% include partials/_header %>
     <% if(!id) { %>
-      <form method="POST" action="/login" style="margin:50px;">
+      <form method="POST" action="/login"">
         <label for="Login">Login:</label>
         <input id="email" type="email" name="email" placeholder="sample@sample.com">
       <input id="password" type="password" name="password" placeholder="password">
         <input type="submit" value="Submit">
       </form>
     <% } else { %>
-      <p>You are already logged in as <%= id %>.</p>
-      <form method="POST" action="/logout" style="margin:50px;">
+      <p>You are already logged in.<br />Are you sure to logout?<br />(id: <%= id %>)</p>
+      <form method="POST" action="/logout"">
         <input type="submit" value="logout">
       </form>
     <% } %>

@@ -1,6 +1,6 @@
 var express = require("express");
 var app = express();
-var PORT = process.env.PORT || 8080; // default port 8080
+var PORT = process.env.PORT || 8080;
 
 //EJS automatically knows to look inside the views directory for template files
 //views subdir created manually
@@ -12,11 +12,14 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
+const bcrypt = require('bcrypt');
+// var cookieSession = require('cookie-session');
+// session = require('express-session');
+// app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 }}));
+// app.set('trust proxy', 1);
 
-// var urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
+
+
 
 var urlDatabase = {
   "b2xVn2": {
@@ -51,12 +54,12 @@ const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: "$2a$10$cY4ZoerABjOpvizZl43/sOLzF9CVkK6Pe4oftnoVOmeQnQGBf.6uC"//purple-monkey-dinosaur
   },
  "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: "$2a$10$QlkTccpIlXZhKNHcjREJnOX.zK47k/LIegip9asOADpg8XE3A.VSC" //dishwasher-funk
   }
 };
 
@@ -127,7 +130,7 @@ function getUserInfo(userId){
 function checkLogin(userEmail, userPwd){
   let id = '';
   for (const userId in users) {
-    if ( users[userId].email === userEmail && users[userId].password === userPwd) {
+    if ( users[userId].email === userEmail && bcrypt.compareSync(userPwd, users[userId].password)) {
       id = userId;
     }
   }
@@ -159,6 +162,8 @@ function checkId(userId, pageId){
 app.get("/urls", (req, res) => {
   // cookies
   let userInfo = getUserInfo(req.cookies['user_id']);
+  //let userInfo = req.session.user_id;
+
   if(Object.keys(userInfo).length === 0) {
     userInfo.id = 1;
   } else {
@@ -174,6 +179,8 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   let userInfo = getUserInfo(req.cookies['user_id']);
+  //let userInfo = getUserInfo(req.session.user_id);
+
   if(!userInfo.id) {
     userInfo.id = false;
     res.redirect(302, '/login');
@@ -185,6 +192,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   let userInfo = getUserInfo(req.cookies['user_id']);
+  //let userInfo = getUserInfo(req.session.user_id);
   let errorMsg = '';
 
   if(!userInfo.id || userInfo.id === 1) {
@@ -215,6 +223,7 @@ app.get("/u/:shortURL", (req, res) => {
 // reg
 app.get("/register", (req, res) => {
   let userInfo = getUserInfo(req.cookies['user_id']);
+  //let userInfo = getUserInfo(req.session.user_id);console.log(req.session.user_id);
   if(!userInfo.id) {
     userInfo.id = false;
     res.render('register', userInfo);
@@ -227,6 +236,7 @@ app.get("/register", (req, res) => {
 // login
 app.get("/login", (req, res) => {
   let userInfo = getUserInfo(req.cookies['user_id']);
+  //let userInfo = getUserInfo(req.session.user_id);
   if(!userInfo.id) {
     userInfo.id = false;
     res.render('login', userInfo);
@@ -258,6 +268,8 @@ app.post("/register", (req, res) => {
   const newUserEmail = req.body.email;
   const newUserPwd = req.body.password;
 
+  const hashedPassword = bcrypt.hashSync(newUserPwd, 10);
+
   let existingUser = checkExistingUser(newUserEmail);
   if (!newUserEmail || !newUserPwd) {
     res.status(400);
@@ -265,7 +277,8 @@ app.post("/register", (req, res) => {
   } else if (existingUser){
     res.send('Your email is already exist.');
   } else {
-    users[newUserId] = {id: newUserId, email: newUserEmail, password: newUserPwd};
+
+    users[newUserId] = {id: newUserId, email: newUserEmail, password: hashedPassword};
     res.cookie('user_id', newUserId);
     res.redirect('/urls');
   }
@@ -304,7 +317,6 @@ app.post("/urls", (req, res) => {
 
 app.post('/urls/:id/delete', (req, res) => {
   for (var key in urlDatabase) {
-    console.log('key',key, 'req.', urlDatabase[key])
     if(key === req.params.id) {
       delete urlDatabase[key];
     }

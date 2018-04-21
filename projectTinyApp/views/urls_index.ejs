@@ -1,19 +1,19 @@
 <%- include("./partials/_header"); %>
 
 <% if (!id || id === 1) { %>
-  <p>Please login or signup from the above link.</p>
+    <p>Please login or signup from the links.</p>
 <% } else { %>
-  <ul>
-    <% for (let key in urls) { %>
-      <li><%= key %> -> <a href="<%= urls[key].url %>"><%= urls[key].url %></a></li>
-      <a href="urls/<%= key %>">Edit</a>
+      <% for (let key in urls) { %>
+      <ul>
+        <li><%= key %><br />&rarr; <a href="<%= urls[key].url %>"><%= urls[key].url %></a></li>
+      </ul>
+      <a class="btn-edit" href="urls/<%= key %>">Edit</a>
       <form method="POST" action="/urls/<%= key %>/delete">
-        <form action="/urls/<%= key %>/delete" method="POST" style="margin:50px;">
         <input type="submit" value="Delete">
       </form>
-    <% } %>
-  </ul>
+      <% } %>
 <% } %>
 
-</body>
+    </div>
+  </body>
 </html>
