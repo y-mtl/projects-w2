@@ -1,21 +1,29 @@
 <%- include("./partials/_header"); %>
 
 <% if (!id || id === 1) { %>
-    <p>Please login or signup from the links.</p>
-
+      <p class="error">Please login or signup from the links.</p>
+<% } else if(Object.keys(urls).length === 0){ %>
+      <p>You have no URLs now.<br />Please create a new short link.</p>
+      <form method="GET" action="/urls/new">
+          <input type="submit" value="Create">
+      </form>
 <% } else { %>
-      <% console.log(urls); if(Object.keys(urls).length === 0){console.log('yes')}%>
       <% for (let key in urls) { %>
       <ul>
         <li><%= key %><br />&rarr; <a href="<%= urls[key].url %>"><%= urls[key].url %></a></li>
       </ul>
-      <a class="btn-edit" href="urls/<%= key %>">Edit</a>
+      <form method="GET" action="/urls/<%= key %>/">
+        <input type="submit" value="Edit">
+      </form>
       <form method="POST" action="/urls/<%= key %>/delete">
         <input type="submit" value="Delete">
       </form>
       <% } %>
+      <form method="GET" action="/urls/new">
+        <input type="submit" value="Create a new URL">
+      </form>
 <% } %>
 
-    </div>
+    </div><! --/.wrapper -->
   </body>
 </html>

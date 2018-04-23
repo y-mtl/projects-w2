@@ -1,11 +1,10 @@
-    <% include partials/_header %>
-
-    <form action="/urls" method="POST">
-      <label for="longURL">Enter a URL:</label>
-      <input id="longURL" type="text" name="longURL" placeholder="http://">
-      <input type="submit" value="Submit">
-    </form>
-  </div>
+<% include partials/_header %>
+      <form action="/urls/" method="POST">
+        <label for="longURL">Enter a new URL:<br />
+        <span>Please enter from "http://" or "https://".</span></label>
+        <input id="longURL" type="text" name="longURL" placeholder="http://">
+        <input type="submit" value="Submit">
+      </form>
+    </div><! --/.wrapper -->
   </body>
 </html>
-

@@ -4,7 +4,6 @@ var PORT = process.env.PORT || 8080;
 
 app.set("view engine", "ejs");
 
-// for POST
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -81,7 +80,6 @@ function addToDB(shortKey, longUrl, userId) {
   }
 }
 
-
 function findURL(inputUrl, userId) {
   for (var key in urlDatabase.user.url){
     if (urlDatabase.user.url[key] === inputUrl) {
@@ -112,12 +110,18 @@ function checkExistingUser(userEmail){
 
 function getUserInfo(userId){
   let userDetail = {};
-  for (const user in users) {
-    if (user === userId) {
-      userDetail = {
-        id: users[user].id,
-        email: users[user].email,
-        password: users[user].password
+  if(!userId) {
+    userDetail = {
+      id: 1
+    }
+  } else {
+    for (const user in users) {
+      if (user === userId) {
+        userDetail = {
+          id: users[user].id,
+          email: users[user].email,
+          password: users[user].password
+        }
       }
     }
   }
@@ -160,16 +164,50 @@ function checkId(userId, pageId){
   return x;
 }
 
-// pass url data to the template
-app.get("/urls", (req, res) => {
-  // cookies
-  let userInfo = getUserInfo(req.session.user_id);
 
-  if(Object.keys(userInfo).length === 0) {
-    userInfo.id = 1;
-  } else {
-    var enduserFrontList = urlsForUser(userInfo['id']);
+
+function addNewlyToDB(inputUrl, userId) {
+  const shortKey = generateRandomString(6);
+  let result = true;
+  for (var key in urlDatabase){
+    if (urlDatabase[key].url === inputUrl) {
+      result = false;
+    } else {
+      urlDatabase[shortKey] = {
+        "id": userId,
+        "shortURL": shortKey,
+        "url": inputUrl
+      }
+      result = true;
+    }
   }
+  return result;
+}
+
+function addNewURL(uid, newUrl){
+  const randomStr = generateRandomString(6);
+  urlDatabase[randomStr] = {
+    id: uid,
+    shortURL: randomStr,
+    url: newUrl
+  }
+}
+
+
+
+app.get("/", (req, res) => {
+  if(!req.session.user_id) {
+    res.redirect(302, '/login');
+  } else {
+    req.session.user_id = req.session.user_id
+    res.redirect(302, '/urls');
+  }
+});
+
+// page to show list of urls
+app.get("/urls", (req, res) => {
+  let userInfo = getUserInfo(req.session.user_id);
+  const enduserFrontList = urlsForUser(userInfo['id']);
   userInfo.urls = enduserFrontList;
   res.render("urls_index", userInfo);
 });
@@ -180,8 +218,7 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   let userInfo = getUserInfo(req.session.user_id);
-
-  if(!userInfo.id) {
+  if(!userInfo.id || userInfo.id === 1) {
     userInfo.id = false;
     res.redirect(302, '/login');
   } else {
@@ -193,76 +230,66 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let userInfo = getUserInfo(req.session.user_id);
   let errorMsg = '';
-
   if(!userInfo.id || userInfo.id === 1) {
-    userInfo.id = false;
-    errorMsg = 'Please login in first';
-    res.send(errorMsg);
-    //res.redirect(302, '/login');
+  res.render("urls_index", userInfo);
   }
   short = req.params.id;
+
   const returnedPage = checkId(userInfo.id, short);
   if(!returnedPage) {
     errorMsg = 'You can edit only links you created.';
-    res.send(errorMsg);
+    userInfo.errorMsg = errorMsg;
+    res.render("error", userInfo);
   } else {
     short = req.params.id;
     userInfo.shortURL = short;
-    userInfo.longURL = urlDatabase[short];
+    userInfo.urls = urlDatabase[short];
     res.render("urls_show", userInfo)
   }
 });
 
-app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
-  res.redirect(302, longURL);
+app.get("/u/:id", (req, res) => {
+  if(urlDatabase[req.params.id]) {
+    const longURL = urlDatabase[req.params.id].url;
+    res.redirect(longURL);
+  } else {
+    let userInfo = getUserInfo(req.session.user_id);
+    let errorMsg = "The URL doesn't exist!";
+    userInfo.errorMsg = errorMsg;
+    res.render("error", userInfo);
+  }
 });
 
 // reg
 app.get("/register", (req, res) => {
   //let userInfo = getUserInfo(req.cookies['user_id']);
   let userInfo = getUserInfo(req.session.user_id);
-  if(!userInfo.id) {
-    userInfo.id = false;
+  if(!userInfo.id || userInfo.id === 1) {
+    userInfo.id = 1;
     res.render('register', userInfo);
   } else {
     userInfo.urls = urlDatabase;
-    res.render("urls_index", userInfo);
+    res.redirect(302, "/urls");
   }
 });
 
 // login
 app.get("/login", (req, res) => {
-  //let userInfo = getUserInfo(req.cookies['user_id']);
   let userInfo = getUserInfo(req.session.user_id);
-  if(!userInfo.id) {
-    userInfo.id = false;
+  if(!userInfo.id || userInfo.id === 1) {
     res.render('login', userInfo);
   } else {
     userInfo.urls = urlDatabase;
-    res.render("login", userInfo);
+    res.redirect(302, "/urls");
   }
-});
-
-
-// add the handler on the root path /
-app.get("/", (req, res) => {
-  //res.end("Hello!");
-  req.session.user_id = req.session.user_id
-  res.redirect(302, '/urls');
-});
-
-app.get("/hello", (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.post('/logout', (req, res) => {
   const user = req.body.user_id;
-  //res.clearCookie('user_id', user);
   req.session = null;
-  //req.session.destroy();
-  res.redirect(302, '/login');
+  res.redirect(302, '/urls');
 });
+
 
 // registration
 app.post("/register", (req, res) => {
@@ -270,68 +297,104 @@ app.post("/register", (req, res) => {
   const newUserEmail = req.body.email;
   const newUserPwd = req.body.password;
   const hashedPassword = bcrypt.hashSync(newUserPwd, 10);
-
   let existingUser = checkExistingUser(newUserEmail);
+  let userInfo = {};
+
   if (!newUserEmail || !newUserPwd) {
+    errorMsg = 'Please enter both fields!';
+    userInfo.id = 1;
+    userInfo.errorMsg = errorMsg;
     res.status(400);
-    res.send('Please enter both fields.');
+    res.render("error", userInfo);
   } else if (existingUser){
-    res.send('Your email is already exist.');
+    errorMsg = 'Your email already exists!';
+    userInfo.id = 1;
+    userInfo.errorMsg = errorMsg;
+    res.status(400);
+    res.render("error", userInfo);
   } else {
     users[newUserId] = {id: newUserId, email: newUserEmail, password: hashedPassword};
-    //res.cookie('user_id', newUserId);
     req.session.user_id = newUserId;
-    res.redirect('/urls');
+    res.redirect(302, '/urls');
   }
 });
 
 // login
 app.post("/login", (req, res) => {
+  let userInfo = {};
   const userEmail = req.body.email;
   const userPwd = req.body.password;
   let errorMsg = '';
   let id = checkLogin(userEmail, userPwd);
   if (!userEmail || !userPwd) {
-    res.status(403);
+    userInfo.id = 1;
     errorMsg = 'Please enter both fields.';
-    res.send(errorMsg);
-    //res.render('login', errorMsg);
-  } else if (!id){
+    //res.send(errorMsg);
+    userInfo.errorMsg = errorMsg;
     res.status(403);
+    res.render("error", userInfo);
+    //res.render('login', errorMsg);
+  } else if (!id || id === 1){
     errorMsg = 'Your email address or password does\'t match.';
-    res.send(errorMsg);
-    //res.render("login", errorMsg);
-    //res.render('error', { error: errorMsg });
+    userInfo.id = 1;
+    userInfo.errorMsg = errorMsg;
+    res.status(403);
+    res.render("error", userInfo);
   } else {
     //res.cookie('user_id', id);
     req.session.user_id = id;
-    res.redirect('/');
+    res.redirect(302, '/urls');
   }
 });
 
-// newly entered url
+
+
+// app.post("/urls", (req, res) => {
+//   const userId = req.session.user_id;
+//   const longURL = req.body.longURL;
+//   const shortURL = findURL(longURL, userId);
+//   res.redirect(`/urls/${shortURL}`);
+// });
+
 app.post("/urls", (req, res) => {
-  //const userId = req.cookies['user_id'];
   const userId = req.session.user_id;
   const longURL = req.body.longURL;
-  const shortURL = findURL(longURL, userId);
-  res.redirect(`/urls/${shortURL}`);
+  let db_result = addNewlyToDB(longURL, userId);
+  if (!db_result) {
+    send('The URL is already exist in your list.');
+  } else {
+    res.redirect(302, '/urls');
+  }
+
+});
+
+// update link
+app.post('/urls/:id', (req, res) => {
+  let userInfo = getUserInfo(req.session.user_id);
+  if(!userInfo.id || userInfo.id === 1){
+    userInfo.id = 1;
+    res.render("urls_index", userInfo);
+  } else {
+    let updateURL = req.body.formUpdate;
+    let updateKey = req.params.id;
+    updateURLs(updateKey, updateURL);
+    res.redirect(302, '/urls');
+  }
 });
 
 app.post('/urls/:id/delete', (req, res) => {
-  for (var key in urlDatabase) {
-    if(key === req.params.id) {
-      delete urlDatabase[key];
+  let userInfo = getUserInfo(req.session.user_id);
+  if(!userInfo.id || userInfo.id === 1){
+    userInfo.id = 1;
+    res.render("urls_index", userInfo);
+  } else {
+    for (var key in urlDatabase) {
+      if(key === req.params.id) {
+        delete urlDatabase[key];
+      }
     }
+    res.redirect(302,'/urls');
   }
-  res.redirect('/urls');
-});
-
-app.post('/urls/:id', (req, res) => {
-  let updateURL = req.body.formUpdate;
-  let updateKey = req.params.id;
-  updateURLs(updateKey, updateURL);
-  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {

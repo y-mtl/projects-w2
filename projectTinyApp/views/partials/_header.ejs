@@ -1,42 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <title>TinyApp</title>
-  <style>
-    body { color: #555; }
-    h1 { color: #999; text-align: center; }
-    div.wrapper { margin: 0 auto; width: 900px; }
-    p { text-align: center; margin-top: 35px;}
-    a { color: #5a6a84; font-family: system-ui, sans-serif; text-decoration: none; }
-    a.btn { font: bold 1.0em Arial; background-color: #fff; color: #111; padding: 5px; border: 1px solid #ccc; }
-    a:visited { color: #5a6a84; }
-    ul { list-style: none; padding-left: 0;}
-    ul li { text-align: center;  }
-    ul.reg-btn { font-size: 0.9em; font-family: verdana; position: absolute; top: 0; right: 30px; }
-    ul.reg-btn li { float: right; padding: 10px;}
-    ul.reg-btn li a, ul.reg-btn li a:visited { color: #888; }
+  <head>
+    <title>TinyApp</title>
+    <style>
+      body { color: #555; }
+      h1 { color: #999; margin-bottom: 40px; text-align: center; }
+      div.wrapper { margin: 0 auto; width: 900px; }
+      p { text-align: center; margin-top: 35px;}
+      p.error { color: #f45942;}
+      a { color: #5a6a84; font-family: system-ui, sans-serif; text-decoration: none; }
+      a.btn { font: bold 1.0em Arial; background-color: #fff; color: #111; padding: 5px; border: 1px solid #ccc; }
+      a:visited { color: #5a6a84; }
+      ul { list-style: none; padding-left: 0;}
+      ul li { text-align: center;  }
 
-    form{ float: left; margin: 10px auto; text-align: center; width: 100%; text-transform: uppercase; }
-    input { display: block; margin: 0 auto; height: 25px; margin: 5px auto; padding: 5px; width: 250px; }
-    input[type=text] { border:2px solid #ccc; border-radius: 5px; padding:5px; }
-    input[type=text]:focus { border-color: #333; }
-    input[type=submit], a.btn-edit { background: #eee; border:0 none; border-radius: 5px; color: #555; padding:5px 15px; }
-    input::placeholder { color: #ccc; }
-    a.btn-edit { display: block; font: 400 11px system-ui; margin: 0 auto; padding: 5px; text-align: center; width: 240px; }
-  </style>
-</head>
+      ul + form {margin-bottom: 0;}
+      ul + form + form { margin-bottom: 35px; }
 
-<body>
-<div class="wrapper">
-  <h1>Tiny App Project</h1>
-<% if(!id || id === 1) { %>
-  <ul class="reg-btn">
-    <li><a href="./register">Sign Up</a></li>
-    <li><a href="./login">Login</a></li>
-  </ul>
-<% } else { %>
-  <ul class="reg-btn">
-    <li><a href="./login">Logout</a></li>
-  </ul>
+      form{ float: left; margin: 10px auto; text-align: center; width: 100%; text-transform: uppercase; }
+      input { display: block; margin: 0 auto; height: 25px; margin: 5px auto; padding: 5px; width: 250px; }
+      input[type=text] { border:2px solid #ccc; border-radius: 5px; padding:5px; }
+      input[type=text]:focus { border-color: #333; }
 
-<% } %>
+      input[type=submit], a.btn-back { background: #eee; border:0 none; border-radius: 5px; color: #555; padding:5px 15px; outline:none; }
+      input::placeholder { color: #ccc; }
+      form.header-btn { position: absolute; top: 5px; right: 35px; }
+      form.header-btn label, form.header-btn input { color: #888; font-size: 0.9em; float: right; padding: 10px; margin: 0; }
+      form.header-btn input { background-color: transparent; cursor: pointer; height: 35px; width: 80px;}
+      form.header-btn label { text-transform: lowercase; font-family: system-ui, sans-serif;}
+      form.header-btn input[type="submit"]:focus { outline:none;}
+      form.header-btn.login { margin-right: 80px;}
+      form label span { color: #999; font-family: system-ui; font-size: 0.8em; text-transform: lowercase;}
+      a.btn-edit, a.btn-back { display: block; font: 400 11px system-ui; margin: 0 auto; padding: 5px; text-align: center; width: 240px; }
+      a.btn-back { clear: both; }
+    </style>
+  </head>
+
+  <body>
+  <div class="wrapper">
+    <h1>Tiny App Project</h1>
+  <% if(!id || id === 1) { %>
+    <form class="header-btn" method="GET" action="/register">
+      <input type="submit" value="Sign Up">
+    </form>
+    <form class="header-btn login" method="GET" action="/login">
+      <input type="submit" value="Login">
+    </form>
+  <% } else { %>
+    <form class="header-btn" method="POST" action="/logout">
+      <label><%= email  %></label>
+      <input type="submit" value="Logout">
+    </form>
+  <% } %>

@@ -1,12 +1,11 @@
-<%- include("./partials/_header"); %>
-
-  <ul>
-      <li>ShortURL: <%= shortURL %></li>
+<% include partials/_header %>
+      <ul>
+        <li>ShortURL: <%= shortURL %></li>
+      </ul>
       <form method="POST" action="/urls/<%= shortURL %>/">
-        <input type="text" name="formUpdate" value="<%= longURL.url %>" placeholder="<%= longURL.url %>">
+        <input type="text" name="formUpdate" value="<%= urls.url %>" placeholder="<%= urls.url %>">
         <input type="submit" value="Update">
       </form>
-  </ul>
-</div>
-</body>
+    </div><! --/.wrapper -->
+  </body>
 </html>
